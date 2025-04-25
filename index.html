@@ -1,5 +1,6 @@
 <script>
-        // 解码函数，处理双重编码等问题
+    (function () {
+        // 解码函数
         function safeDecode(value) {
             try {
                 const once = decodeURIComponent(value);
@@ -13,55 +14,34 @@
                 }
             }
         }
-    
+
         // 获取 URL 参数并尝试多层解码
         function getURLParameter(name) {
             const urlParams = new URLSearchParams(window.location.search);
             const rawValue = urlParams.get(name);
             return rawValue ? safeDecode(rawValue) : null;
         }
-    
-        // 获取并处理 ScCid 参数
-        const scCid = getURLParameter('ScCid');  // Snapchat 参数
-    
-        // 保存 ScCid
-        if (scCid) {
-            localStorage.setItem('sc_cid', scCid);
-            console.log('Snapchat CID:', scCid);
+
+        // 先尝试从 URL 获取 ScCid 参数
+        const urlScCid = getURLParameter('ScCid');
+
+        if (urlScCid) {
+            // 如果 URL 有参数，保存到 localStorage
+            localStorage.setItem('sc_cid', urlScCid);
         }
-    </script>
 
-<script type="text/javascript">
-    // 从localStorage获取ScCid
-    const scCid = localStorage.getItem('sc_cid');
+        // 从 localStorage 获取并解码
+        const scCid = localStorage.getItem('sc_cid');
+        const decodedScCid = scCid ? safeDecode(scCid) : null;
 
-    // 解码函数，防止编码导致的乱码
-    function safeDecode(value) {
-        try {
-            const once = decodeURIComponent(value);
-            const twice = decodeURIComponent(once);
-            return twice;
-        } catch (e) {
-            try {
-                return decodeURIComponent(value);
-            } catch (err) {
-                return value;
-            }
+        // 构造跳转 URL
+        let redirectUrl = 'https://nmttrack.com/?a=146518&o=168172&c=0&co=194328&mt=24&s1=snapchat';
+
+        if (decodedScCid) {
+            redirectUrl += `&s5=${encodeURIComponent(decodedScCid)}`;
         }
-    }
 
-    // 检查scCid是否存在，并解码
-    if (scCid) {
-        const decodedScCid = safeDecode(scCid);
-
-        // 动态生成URL，插入scCid作为s5的值
-        const url = `https://nmttrack.com/?a=146518&o=168172&c=0&co=194328&mt=24&s1=snapchat&s5=${encodeURIComponent(decodedScCid)}`;
-
-        // 重定向到构造的URL
-        window.location.href = url;
-    } else {
-        // 如果scCid不存在，使用默认的URL
-        const defaultUrl = 'https://nmttrack.com/?a=146518&o=168172&c=0&co=194328&mt=24&s1=snapchat'; // 替换为你想要的默认URL
-        window.location.href = defaultUrl;
-    }
+        // 执行跳转
+        window.location.href = redirectUrl;
+    })();
 </script>
